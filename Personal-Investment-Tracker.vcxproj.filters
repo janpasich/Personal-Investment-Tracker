@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{b72cf100-eb4a-4de0-bf94-1ed797365189}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Models">
+      <UniqueIdentifier>{3c1b8a27-d6e5-4d2f-b5de-f9efa28a0d03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{75463c32-93b1-473a-a8eb-d4c5d6790f03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Root">
+      <UniqueIdentifier>{42b943f9-dce8-498b-aa7e-429bd55b909f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Cash.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Crypto.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Root</Filter>
+    </ClCompile>
+    <ClCompile Include="PreciousMetal.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Stock.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Portfolio.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="SaveManager.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="MainWindow.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="AddAssetDialog.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="MainWindow.h">
+      <Filter>GUI</Filter>
+    </QtMoc>
+    <QtMoc Include="AddAssetDialog.h">
+      <Filter>GUI</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="AddAssetDialog.ui">
+      <Filter>GUI</Filter>
+    </QtUic>
+    <QtUic Include="MainWindow.ui">
+      <Filter>GUI</Filter>
+    </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Asset.h">
+      <Filter>Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Stock.h">
+      <Filter>Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Crypto.h">
+      <Filter>Models</Filter>
+    </ClInclude>
+    <ClInclude Include="PreciousMetal.h">
+      <Filter>Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Cash.h">
+      <Filter>Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Portfolio.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="SaveManager.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
