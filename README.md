@@ -13,7 +13,7 @@ A desktop application built in C++ and the Qt Framework, designed for tracking a
 Unlike trading simulators where fiat currency is merely a transactional medium, this application treats cash as a distinct, standalone asset subclass. This reflects real-world portfolio management, where holding cash is an active allocation strategy. Cash balances contribute directly to the total portfolio value and asset allocation metrics.
 
 ### 2. API Rate Limit Security & Stability
-Fetching live market data (Yahoo Finance, CoinGecko, NBP) is strictly optimized. API requests are executed only upon application startup or when a new asset is manually added. This architectural decision prevents the application from overloading external servers with background polling (e.g., using timers). It eliminates the risk of encountering HTTP 429 Too Many Requests errors or IP bans, ensuring stability for long-term portfolio tracking.
+Fetching live market data (Yahoo Finance, CoinGecko, NBP) is strictly optimized. API requests are executed only upon application startup. This architectural decision prevents the application from overloading external servers with background polling (e.g., using timers). It eliminates the risk of encountering HTTP 429 Too Many Requests errors or IP bans, ensuring stability for long-term portfolio tracking.
 
 <img width="985" height="779" alt="Zrzut ekranu 2026-08-15 120040" src="https://github.com/user-attachments/assets/66552d3a-c0a5-437d-b5cb-81a62f27f449" />
 
