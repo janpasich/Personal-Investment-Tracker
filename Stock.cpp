@@ -1,7 +1,7 @@
 #include "Stock.h"
 
 // --- CONSTRUCTOR ---
-Stock::Stock(std::string t, double l, double s, double k, double d)
+Stock::Stock(const std::string& t, double l, double s, double k, double d)
     : ticker(t), numberOfShares(l), averagePrice(s), currentPrice(k), dividendPerShare(d) {
 }
 

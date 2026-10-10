@@ -62,7 +62,7 @@ bool SaveManager::loadPortfolioBinary(Portfolio& portfolio, Cash* cash, const st
         if (type == "Cash") {
             double currentBalance = cash->getQuantity();
             cash->subtractFromPosition(currentBalance);
-            cash->addFunds(quantity);
+            cash->addToPosition(quantity, 1.0);
         }
         else if (type == "Stock") {
             portfolio.addAsset(std::make_unique<Stock>(name, quantity, averagePrice, currentPrice, dividend));

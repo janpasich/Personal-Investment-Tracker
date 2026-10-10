@@ -1,13 +1,13 @@
 #include "Crypto.h"
 
 // --- CONSTRUCTOR ---
-Crypto::Crypto(std::string t, double i, double s, double k)
-    : ticker(t), tokenAmount(i), averagePurchasePrice(s), currentPrice(k) {
+Crypto::Crypto(const std::string& t, double i, double s, double k)
+    : ticker(t), tokenAmount(i), averagePrice(s), currentPrice(k) {
 }
 
 // --- GETTERS (Specific to Crypto) ---
 double Crypto::getAveragePrice() const {
-    return averagePurchasePrice;
+    return averagePrice;
 }
 
 double Crypto::getCurrentPrice() const {
@@ -15,7 +15,7 @@ double Crypto::getCurrentPrice() const {
 }
 
 double Crypto::calculateProfitLoss() const {
-    return tokenAmount * (currentPrice - averagePurchasePrice);
+    return tokenAmount * (currentPrice - averagePrice);
 }
 
 // --- VIRTUAL FUNCTIONS IMPLEMENTATION (Contract from Asset class) ---
@@ -33,20 +33,17 @@ std::string Crypto::getName() const {
     return ticker;
 }
 
-double Crypto::calculateEstimatedDividend() const {
-    return 0; // Crypto does not pay dividends
-}
 
 double Crypto::getQuantity() const {
     return tokenAmount;
 }
 
 void Crypto::addToPosition(double newQuantity, double transactionPrice) {
-    double oldPositionValue = tokenAmount * averagePurchasePrice;
+    double oldPositionValue = tokenAmount * averagePrice;
     double newPositionValue = newQuantity * transactionPrice;
 
     tokenAmount += newQuantity;
-    averagePurchasePrice = (oldPositionValue + newPositionValue) / tokenAmount;
+    averagePrice = (oldPositionValue + newPositionValue) / tokenAmount;
 }
 
 bool Crypto::subtractFromPosition(double quantityToSell) {
@@ -62,6 +59,6 @@ bool Crypto::subtractFromPosition(double quantityToSell) {
 std::string Crypto::formatToCSV() const {
     return "Crypto;" + ticker + ";" +
         std::to_string(tokenAmount) + ";" +
-        std::to_string(averagePurchasePrice) + ";" +
+        std::to_string(averagePrice) + ";" +
         std::to_string(currentPrice) + ";0";
 }

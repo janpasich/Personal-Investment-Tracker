@@ -1,13 +1,13 @@
 #include "PreciousMetal.h"
 
 // --- CONSTRUCTOR ---
-PreciousMetal::PreciousMetal(std::string t, double w, double s, double k)
-    : ticker(t), weightOunces(w), averagePricePerOunce(s), currentPrice(k) {
+PreciousMetal::PreciousMetal(const std::string& t, double w, double s, double k)
+    : ticker(t), weightOunces(w), averagePrice(s), currentPrice(k) {
 }
 
 // --- GETTERS (Specific to PreciousMetal) ---
 double PreciousMetal::getAveragePrice() const {
-    return averagePricePerOunce;
+    return averagePrice;
 }
 
 double PreciousMetal::getWeight() const {
@@ -19,7 +19,7 @@ double PreciousMetal::getCurrentPrice() const {
 }
 
 double PreciousMetal::calculateProfitLoss() const {
-    return weightOunces * (currentPrice - averagePricePerOunce);
+    return weightOunces * (currentPrice - averagePrice);
 }
 
 // --- VIRTUAL FUNCTIONS IMPLEMENTATION ---
@@ -46,11 +46,11 @@ double PreciousMetal::getQuantity() const {
 }
 
 void PreciousMetal::addToPosition(double newQuantity, double transactionPrice) {
-    double oldPositionValue = weightOunces * averagePricePerOunce;
+    double oldPositionValue = weightOunces * averagePrice;
     double newPositionValue = newQuantity * transactionPrice;
 
     weightOunces += newQuantity;
-    averagePricePerOunce = (oldPositionValue + newPositionValue) / weightOunces;
+    averagePrice = (oldPositionValue + newPositionValue) / weightOunces;
 }
 
 bool PreciousMetal::subtractFromPosition(double quantityToSell) {
@@ -67,6 +67,6 @@ std::string PreciousMetal::formatToCSV() const {
     // Precious metal has no dividend, so we append 0 at the end
     return "PreciousMetal;" + ticker + ";" +
         std::to_string(weightOunces) + ";" +
-        std::to_string(averagePricePerOunce) + ";" +
+        std::to_string(averagePrice) + ";" +
         std::to_string(currentPrice) + ";0";
 }

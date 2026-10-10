@@ -68,7 +68,7 @@ void MainWindow::onBtnAddClicked()
                     myCash->subtractFromPosition(-quantity);
                 }
                 else {
-                    myCash->addFunds(quantity);
+                    myCash->addToPosition(quantity, 1.0);
                 }
                 refreshTable();
                 return;

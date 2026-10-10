@@ -12,7 +12,7 @@ private:
 
 public:
     // Constructor
-    Stock(std::string t, double l, double s, double k, double d);
+    Stock(const std::string& t, double l, double s, double k, double d);
 
     // --- 1. API PREPARATION (Setters) ---
     void updatePrice(double newPrice); // Note: This is declared but wasn't implemented in your .cpp (you used setCurrentPrice instead)
@@ -21,7 +21,7 @@ public:
 
     // --- 2. GUI PREPARATION (Getters) ---
     double getCurrentPrice() const;
-    double getAveragePrice() const;
+    double getAveragePrice() const override;
     double getNumberOfShares() const;
     double calculateProfitLoss() const;
 

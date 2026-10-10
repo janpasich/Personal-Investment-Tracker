@@ -4,14 +4,6 @@
 Cash::Cash(double initialCapital) : availableFunds(initialCapital) {
 }
 
-// --- SPECIFIC METHODS (Specific to Cash) ---
-void Cash::addFunds(double amount) {
-    availableFunds += amount;
-}
-
-void Cash::withdrawFunds(double amount) {
-    availableFunds -= amount;
-}
 
 // --- VIRTUAL FUNCTIONS IMPLEMENTATION ---
 
@@ -19,8 +11,8 @@ double Cash::calculateValue() const {
     return availableFunds;
 }
 
-double Cash::calculateEstimatedDividend() const {
-    return 0; // Cash does not generate dividends
+double Cash::getAveragePrice() const {
+    return 1.0;
 }
 
 std::string Cash::getName() const {
