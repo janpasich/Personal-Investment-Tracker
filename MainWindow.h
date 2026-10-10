@@ -4,7 +4,6 @@
 #include <QLabel>
 #include <QPainter>
 #include "Portfolio.h"
-#include "Cash.h"
 #include "SaveManager.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -38,7 +37,6 @@ private slots:
 private:
     Ui::MainWindow* ui;
     Portfolio myPortfolio;
-    Cash* myCash;
     QLabel* chartLabel;
     void drawChartQPainter();
     QNetworkAccessManager* networkManager;

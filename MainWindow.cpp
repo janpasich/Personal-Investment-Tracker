@@ -11,7 +11,7 @@
 #include "AddAssetDialog.h"
 #include "PreciousMetal.h"
 #include "Crypto.h"
-#include "Cash.h"
+#include "Cash.h" 
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -19,12 +19,10 @@ MainWindow::MainWindow(QWidget* parent)
 {
     ui->setupUi(this);
     ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    networkManager = new QNetworkAccessManager(this);
-    connect(networkManager, &QNetworkAccessManager::finished, this, &MainWindow::onApiReply);
-    networkManager = new QNetworkAccessManager(this);
-    connect(networkManager, &QNetworkAccessManager::finished, this, &MainWindow::onApiReply);
 
-    myCash = new Cash(0.0);
+    // Usun¹³em podwójne przypisanie networkManagera
+    networkManager = new QNetworkAccessManager(this);
+    connect(networkManager, &QNetworkAccessManager::finished, this, &MainWindow::onApiReply);
 
     if (!ui->tab_2->layout()) {
         ui->tab_2->setLayout(new QVBoxLayout());
@@ -34,7 +32,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->tab_2->layout()->addWidget(chartLabel);
 
     QString filePath = QCoreApplication::applicationDirPath() + "/my_portfolio.dat";
-    SaveManager::loadPortfolioBinary(myPortfolio, myCash, filePath.toStdString());
+    SaveManager::loadPortfolioBinary(myPortfolio, filePath.toStdString());
 
     refreshTable();
 
@@ -48,7 +46,6 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-    delete myCash;
     delete ui;
 }
 
@@ -64,11 +61,26 @@ void MainWindow::onBtnAddClicked()
             double price = dialog.getPrice();
 
             if (type == "Cash" || type.contains("Cash")) {
+                // Zamiast myCash, szukamy gotówki w wektorze polimorficznym
+                Asset* cashAsset = nullptr;
+                for (const auto& a : myPortfolio.getAssets()) {
+                    if (dynamic_cast<Cash*>(a.get())) {
+                        cashAsset = a.get();
+                        break;
+                    }
+                }
+
+                // Jeœli nie ma jeszcze gotówki w portfelu, tworzymy j¹
+                if (!cashAsset) {
+                    myPortfolio.addAsset(std::make_unique<Cash>(0.0));
+                    cashAsset = myPortfolio.getAssets().back().get();
+                }
+
                 if (quantity < 0) {
-                    myCash->subtractFromPosition(-quantity);
+                    cashAsset->subtractFromPosition(-quantity);
                 }
                 else {
-                    myCash->addToPosition(quantity, 1.0);
+                    cashAsset->addToPosition(quantity, 1.0);
                 }
                 refreshTable();
                 return;
@@ -81,13 +93,8 @@ void MainWindow::onBtnAddClicked()
             }
             else if (type == "PreciousMetal") {
                 QString lowerName = name.trimmed().toLower();
-
-                if (lowerName == "gold" || lowerName == "gc=f") {
-                    name = "XAU";
-                }
-                else if (lowerName == "silver" || lowerName == "si=f") {
-                    name = "XAG";
-                }
+                if (lowerName == "gold" || lowerName == "gc=f") name = "XAU";
+                else if (lowerName == "silver" || lowerName == "si=f") name = "XAG";
 
                 newAsset = std::make_unique<PreciousMetal>(name.toStdString(), quantity, price, price);
             }
@@ -109,57 +116,43 @@ void MainWindow::onBtnAddClicked()
 void MainWindow::refreshTable()
 {
     ui->tableWidget->setRowCount(0);
-    // const auto& prevents attempting to copy the unique_ptr!
     const auto& assets = myPortfolio.getAssets();
 
-    double totalValue = myCash->calculateValue() + myPortfolio.calculateTotalValue();
+    double totalValue = myPortfolio.calculateTotalValue();
     double totalDividend = myPortfolio.calculateTotalDividend();
     double totalProfit = 0.0;
 
-    for (const auto& asset : assets) {
-        // Extract raw pointer using .get() for dynamic_cast
-        if (Stock* stock = dynamic_cast<Stock*>(asset.get())) {
-            totalProfit += stock->calculateProfitLoss();
-        }
-    }
-
-    ui->lblTotalValue->setText(QString("Portfolio Value: %1 PLN").arg(totalValue, 0, 'f', 2));
-    ui->lblDividend->setText(QString("Estimated Dividend: %1 PLN/year").arg(totalDividend, 0, 'f', 2));
-    ui->lblProfit->setText(QString("Profit/Loss: %1 PLN").arg(totalProfit, 0, 'f', 2));
-
-    ui->tableWidget->insertRow(0);
-    ui->tableWidget->setItem(0, 0, new QTableWidgetItem("PLN"));
-    ui->tableWidget->setItem(0, 1, new QTableWidgetItem("Cash"));
-    ui->tableWidget->setItem(0, 2, new QTableWidgetItem(QString::number(myCash->getQuantity(), 'f', 2)));
-    ui->tableWidget->setItem(0, 3, new QTableWidgetItem("1.00 PLN"));
-    ui->tableWidget->setItem(0, 4, new QTableWidgetItem(QString::number(myCash->calculateValue(), 'f', 2) + " PLN"));
-    ui->tableWidget->setItem(0, 5, new QTableWidgetItem("-"));
-
     for (size_t i = 0; i < assets.size(); ++i) {
-        int row = i + 1;
+        int row = i; // Koniec z przesuniêciem dla gotówki!
         ui->tableWidget->insertRow(row);
 
         QString name = QString::fromStdString(assets[i]->getName());
         ui->tableWidget->setItem(row, 0, new QTableWidgetItem(name));
 
         QString category = "Other";
-        QString purchasePriceStr = "-";
+        QString purchasePriceStr = QString::number(assets[i]->getAveragePrice(), 'f', 2) + " PLN"; // Magia polimorfizmu!
         QString profitStr = "-";
 
         if (Stock* stock = dynamic_cast<Stock*>(assets[i].get())) {
             category = "Stocks";
-            purchasePriceStr = QString::number(stock->getAveragePrice(), 'f', 2) + " PLN";
             profitStr = QString::number(stock->calculateProfitLoss(), 'f', 2) + " PLN";
+            totalProfit += stock->calculateProfitLoss();
         }
         else if (PreciousMetal* metal = dynamic_cast<PreciousMetal*>(assets[i].get())) {
             category = "Precious Metal";
-            purchasePriceStr = QString::number(metal->getAveragePrice(), 'f', 2) + " PLN";
             profitStr = QString::number(metal->calculateProfitLoss(), 'f', 2) + " PLN";
+            totalProfit += metal->calculateProfitLoss();
         }
         else if (Crypto* crypto = dynamic_cast<Crypto*>(assets[i].get())) {
             category = "Crypto";
-            purchasePriceStr = QString::number(crypto->getAveragePrice(), 'f', 2) + " PLN";
             profitStr = QString::number(crypto->calculateProfitLoss(), 'f', 2) + " PLN";
+            totalProfit += crypto->calculateProfitLoss();
+        }
+        else if (dynamic_cast<Cash*>(assets[i].get())) {
+            category = "Cash";
+            purchasePriceStr = "1.00 PLN";
+            name = "PLN"; // Dla ³adniejszego wygl¹du
+            ui->tableWidget->setItem(row, 0, new QTableWidgetItem(name));
         }
 
         ui->tableWidget->setItem(row, 1, new QTableWidgetItem(category));
@@ -176,6 +169,11 @@ void MainWindow::refreshTable()
         QString divProfit = QString("Div: %1 | P/L: %2").arg(QString::number(dividend, 'f', 2) + " PLN").arg(profitStr);
         ui->tableWidget->setItem(row, 5, new QTableWidgetItem(divProfit));
     }
+
+    ui->lblTotalValue->setText(QString("Portfolio Value: %1 PLN").arg(totalValue, 0, 'f', 2));
+    ui->lblDividend->setText(QString("Estimated Dividend: %1 PLN/year").arg(totalDividend, 0, 'f', 2));
+    ui->lblProfit->setText(QString("Profit/Loss: %1 PLN").arg(totalProfit, 0, 'f', 2));
+
     drawChartQPainter();
 }
 
@@ -184,55 +182,58 @@ void MainWindow::onBtnDeleteClicked()
     int currentRow = ui->tableWidget->currentRow();
     if (currentRow < 0) return;
 
-    if (currentRow == 0) {
-        double availableCash = myCash->getQuantity();
-
-        if (availableCash <= 0) {
-            QMessageBox::information(this, "Insufficient funds", "You don't have cash to withdraw.");
-            return;
-        }
-
-        bool confirmed;
-        double amountToRemove = QInputDialog::getDouble(
-            this,
-            "Cash Withdrawal",
-            QString("How much PLN do you want to withdraw? (Available: %1 PLN)").arg(availableCash),
-            availableCash,
-            0.01,
-            availableCash,
-            2,
-            &confirmed
-        );
-
-        if (confirmed && amountToRemove > 0) {
-            myCash->subtractFromPosition(amountToRemove);
-            refreshTable();
-        }
-        return;
-    }
-
     const auto& assets = myPortfolio.getAssets();
-    int vectorIndex = currentRow - 1;
+    int vectorIndex = currentRow; // Idealne mapowanie wiersza na wektor
 
     if (vectorIndex < assets.size()) {
-        double availableQuantity = assets[vectorIndex]->getQuantity();
-        QString assetName = QString::fromStdString(assets[vectorIndex]->getName());
+        Asset* selectedAsset = assets[vectorIndex].get();
 
-        bool confirmed;
-        double quantityToRemove = QInputDialog::getDouble(
-            this,
-            "Partial Sale",
-            QString("How many units of '%1' do you want to sell? (Available: %2)").arg(assetName).arg(availableQuantity),
-            availableQuantity,
-            0.0001,
-            availableQuantity,
-            4,
-            &confirmed
-        );
+        if (dynamic_cast<Cash*>(selectedAsset)) {
+            // Sprzeda¿ gotówki (wyp³ata)
+            double availableCash = selectedAsset->getQuantity();
+            if (availableCash <= 0) {
+                QMessageBox::information(this, "Insufficient funds", "You don't have cash to withdraw.");
+                return;
+            }
 
-        if (confirmed && quantityToRemove > 0) {
-            myPortfolio.sellAsset(vectorIndex, quantityToRemove, 0.0);
-            refreshTable();
+            bool confirmed;
+            double amountToRemove = QInputDialog::getDouble(
+                this,
+                "Cash Withdrawal",
+                QString("How much PLN do you want to withdraw? (Available: %1 PLN)").arg(availableCash),
+                availableCash,
+                0.01,
+                availableCash,
+                2,
+                &confirmed
+            );
+
+            if (confirmed && amountToRemove > 0) {
+                selectedAsset->subtractFromPosition(amountToRemove);
+                refreshTable();
+            }
+        }
+        else {
+            // Sprzeda¿ zwyk³ego aktywa
+            double availableQuantity = selectedAsset->getQuantity();
+            QString assetName = QString::fromStdString(selectedAsset->getName());
+
+            bool confirmed;
+            double quantityToRemove = QInputDialog::getDouble(
+                this,
+                "Partial Sale",
+                QString("How many units of '%1' do you want to sell? (Available: %2)").arg(assetName).arg(availableQuantity),
+                availableQuantity,
+                0.0001,
+                availableQuantity,
+                4,
+                &confirmed
+            );
+
+            if (confirmed && quantityToRemove > 0) {
+                myPortfolio.sellAsset(vectorIndex, quantityToRemove, 0.0);
+                refreshTable();
+            }
         }
     }
 }
@@ -240,7 +241,7 @@ void MainWindow::onBtnDeleteClicked()
 void MainWindow::onBtnSaveClicked()
 {
     QString filePath = QCoreApplication::applicationDirPath() + "/my_portfolio.dat";
-    bool savedSuccessfully = SaveManager::savePortfolioBinary(myPortfolio, myCash, filePath.toStdString());
+    bool savedSuccessfully = SaveManager::savePortfolioBinary(myPortfolio, filePath.toStdString());
 
     if (savedSuccessfully) {
         QMessageBox::information(this, "Success", "Portfolio state has been saved successfully!");
@@ -260,13 +261,14 @@ void MainWindow::drawChartQPainter()
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    double cash = myCash->calculateValue();
-    double stocks = 0.0, metals = 0.0, crypto = 0.0;
+    double cash = 0.0, stocks = 0.0, metals = 0.0, crypto = 0.0;
 
+    // Jedna czysta pêtla filtruj¹ca typy aktywów do wykresu
     for (const auto& asset : myPortfolio.getAssets()) {
         if (dynamic_cast<Stock*>(asset.get())) stocks += asset->calculateValue();
         else if (dynamic_cast<PreciousMetal*>(asset.get())) metals += asset->calculateValue();
         else if (dynamic_cast<Crypto*>(asset.get())) crypto += asset->calculateValue();
+        else if (dynamic_cast<Cash*>(asset.get())) cash += asset->calculateValue();
     }
 
     double total = cash + stocks + metals + crypto;
@@ -318,7 +320,6 @@ void MainWindow::drawChartQPainter()
 
 void MainWindow::onApiReply(QNetworkReply* reply)
 {
-
     if (reply->error() == QNetworkReply::NoError) {
         int index = reply->property("assetIndex").toInt();
         QString apiEngine = reply->property("apiName").toString();
@@ -326,11 +327,9 @@ void MainWindow::onApiReply(QNetworkReply* reply)
         QByteArray response = reply->readAll();
         QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
 
-
         if (jsonDoc.isObject()) {
             QJsonObject jsonObj = jsonDoc.object();
 
-    
             if (apiEngine == "NBP_USD") {
                 if (jsonObj.contains("rates") && jsonObj["rates"].isArray()) {
                     QJsonArray rates = jsonObj["rates"].toArray();
@@ -354,9 +353,7 @@ void MainWindow::onApiReply(QNetworkReply* reply)
 
             double fetchedPrice = -1.0;
 
-
             if (apiEngine == "Yahoo") {
-  
                 if (jsonObj.contains("chart") && jsonObj["chart"].isObject()) {
                     QJsonObject chartObj = jsonObj["chart"].toObject();
 
@@ -369,30 +366,21 @@ void MainWindow::onApiReply(QNetworkReply* reply)
                             if (meta.contains("regularMarketPrice")) {
                                 fetchedPrice = meta["regularMarketPrice"].toDouble();
 
-                               
                                 if (meta.contains("currency")) {
                                     QString currency = meta["currency"].toString();
-
-                                    if (currency == "USD") {
-                                        fetchedPrice = fetchedPrice * rateUSD;
-                                    }
-                                    else if (currency == "EUR") {
-                                        fetchedPrice = fetchedPrice * rateEUR;
-                                    }
-                                    
+                                    if (currency == "USD") fetchedPrice = fetchedPrice * rateUSD;
+                                    else if (currency == "EUR") fetchedPrice = fetchedPrice * rateEUR;
                                 }
                             }
                         }
                     }
                 }
             }
-
             else if (apiEngine == "CoinGecko") {
                 QStringList keys = jsonObj.keys();
                 if (!keys.isEmpty()) {
                     QString cryptoKey = keys.first();
                     QJsonObject cryptoObj = jsonObj[cryptoKey].toObject();
-
                     if (cryptoObj.contains("pln")) {
                         fetchedPrice = cryptoObj["pln"].toDouble();
                     }
@@ -461,9 +449,9 @@ void MainWindow::fetchApiRates()
 
 void MainWindow::onTableDoubleClicked(int row, int column)
 {
-    if (row <= 0) return;
+    if (row < 0) return;
 
-    int vectorIndex = row - 1;
+    int vectorIndex = row; // Tu te¿ pozbywamy siê przesuniêcia!
     const auto& assets = myPortfolio.getAssets();
 
     if (vectorIndex < assets.size()) {
@@ -490,7 +478,7 @@ void MainWindow::onTableDoubleClicked(int row, int column)
                 stock->updateDividend(newDividend);
 
                 QString filePath = QCoreApplication::applicationDirPath() + "/my_portfolio.dat";
-                SaveManager::savePortfolioBinary(myPortfolio, myCash, filePath.toStdString());
+                SaveManager::savePortfolioBinary(myPortfolio, filePath.toStdString());
 
                 refreshTable();
             }

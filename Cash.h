@@ -4,7 +4,7 @@
 
 class Cash : public Asset {
 private:
-    double availableFunds; // Stores the amount of available cash
+    double funds; 
 
 public:
     // Constructor setting the initial capital

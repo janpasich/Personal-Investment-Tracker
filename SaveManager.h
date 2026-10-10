@@ -1,8 +1,7 @@
 #pragma once
 #include <string>
-#include <fstream> // Dodane dla obs³ugi std::ofstream i std::ifstream
+#include <fstream>
 #include "Portfolio.h"
-#include "Cash.h"
 
 class SaveManager {
 private:
@@ -10,6 +9,6 @@ private:
     static std::string readStringBin(std::ifstream& file);
 
 public:
-    static bool savePortfolioBinary(const Portfolio& portfolio, Cash* cash, const std::string& filename);
-    static bool loadPortfolioBinary(Portfolio& portfolio, Cash* cash, const std::string& filename);
+    static bool savePortfolioBinary(const Portfolio& portfolio, const std::string& filename);
+    static bool loadPortfolioBinary(Portfolio& portfolio, const std::string& filename);
 };

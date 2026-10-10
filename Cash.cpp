@@ -1,14 +1,15 @@
 #include "Cash.h"
+#include <sstream>
 
 // --- CONSTRUCTOR ---
-Cash::Cash(double initialCapital) : availableFunds(initialCapital) {
+Cash::Cash(double initialCapital) : funds(initialCapital) {
 }
 
 
 // --- VIRTUAL FUNCTIONS IMPLEMENTATION ---
 
 double Cash::calculateValue() const {
-    return availableFunds;
+    return funds;
 }
 
 double Cash::getAveragePrice() const {
@@ -20,24 +21,27 @@ std::string Cash::getName() const {
 }
 
 double Cash::getQuantity() const {
-    return availableFunds;
+    return funds;
 }
 
 void Cash::addToPosition(double newQuantity, double /*transactionPrice*/) {
-    availableFunds += newQuantity;
+    funds += newQuantity;
 }
 
 bool Cash::subtractFromPosition(double amountToSubtract) {
     // Guard: cannot spend more cash than is available in the account
-    if (amountToSubtract > availableFunds) {
+    if (amountToSubtract > funds) {
         return false;
     }
 
-    availableFunds -= amountToSubtract;
+    funds -= amountToSubtract;
     return true;
 }
 
 std::string Cash::formatToCSV() const {
-    // Cash has a 1:1 exchange rate, so price parameters are 1.0
-    return "Cash;PLN;" + std::to_string(availableFunds) + ";1.0;1.0;0";
+    std::ostringstream oss;
+    oss << "Cash;PLN;"
+        << funds << ";1.0;1.0;0";
+
+    return oss.str();
 }

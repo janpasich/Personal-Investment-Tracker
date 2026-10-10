@@ -5,6 +5,7 @@
 #include "Stock.h"
 #include "PreciousMetal.h"
 #include "Crypto.h"
+#include "Cash.h" 
 
 void SaveManager::writeStringBin(std::ofstream& file, const std::string& str) {
     size_t length = str.size();
@@ -22,14 +23,13 @@ std::string SaveManager::readStringBin(std::ifstream& file) {
     return "";
 }
 
-bool SaveManager::savePortfolioBinary(const Portfolio& portfolio, Cash* cash, const std::string& filename) {
+bool SaveManager::savePortfolioBinary(const Portfolio& portfolio, const std::string& filename) {
     std::ofstream file(filename, std::ios::binary);
     if (!file.is_open()) return false;
 
-    writeStringBin(file, cash->formatToCSV());
-
     const auto& assets = portfolio.getAssets();
     size_t count = assets.size();
+
     file.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
     for (const auto& asset : assets) {
@@ -40,7 +40,7 @@ bool SaveManager::savePortfolioBinary(const Portfolio& portfolio, Cash* cash, co
     return true;
 }
 
-bool SaveManager::loadPortfolioBinary(Portfolio& portfolio, Cash* cash, const std::string& filename) {
+bool SaveManager::loadPortfolioBinary(Portfolio& portfolio, const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     if (!file.is_open()) return false;
 
@@ -60,9 +60,7 @@ bool SaveManager::loadPortfolioBinary(Portfolio& portfolio, Cash* cash, const st
         double dividend = dividendStr.empty() ? 0.0 : std::stod(dividendStr);
 
         if (type == "Cash") {
-            double currentBalance = cash->getQuantity();
-            cash->subtractFromPosition(currentBalance);
-            cash->addToPosition(quantity, 1.0);
+            portfolio.addAsset(std::make_unique<Cash>(quantity));
         }
         else if (type == "Stock") {
             portfolio.addAsset(std::make_unique<Stock>(name, quantity, averagePrice, currentPrice, dividend));
@@ -74,9 +72,6 @@ bool SaveManager::loadPortfolioBinary(Portfolio& portfolio, Cash* cash, const st
             portfolio.addAsset(std::make_unique<Crypto>(name, quantity, averagePrice, currentPrice));
         }
         };
-
-    std::string cashLine = readStringBin(file);
-    if (!cashLine.empty()) parseAsset(cashLine);
 
     size_t count = 0;
     if (file.read(reinterpret_cast<char*>(&count), sizeof(count))) {

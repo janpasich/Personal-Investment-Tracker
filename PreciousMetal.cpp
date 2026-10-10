@@ -1,4 +1,5 @@
 #include "PreciousMetal.h"
+#include <sstream>
 
 // --- CONSTRUCTOR ---
 PreciousMetal::PreciousMetal(const std::string& t, double w, double s, double k)
@@ -64,9 +65,12 @@ bool PreciousMetal::subtractFromPosition(double quantityToSell) {
 }
 
 std::string PreciousMetal::formatToCSV() const {
-    // Precious metal has no dividend, so we append 0 at the end
-    return "PreciousMetal;" + ticker + ";" +
-        std::to_string(weightOunces) + ";" +
-        std::to_string(averagePrice) + ";" +
-        std::to_string(currentPrice) + ";0";
+    std::ostringstream oss;
+    oss << "PreciousMetal;"
+        << ticker << ";"
+        << weightOunces << ";"
+        << averagePrice << ";"
+        << currentPrice << ";0";
+
+    return oss.str();
 }

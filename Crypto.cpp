@@ -1,4 +1,5 @@
 #include "Crypto.h"
+#include <sstream>
 
 // --- CONSTRUCTOR ---
 Crypto::Crypto(const std::string& t, double i, double s, double k)
@@ -57,8 +58,12 @@ bool Crypto::subtractFromPosition(double quantityToSell) {
 }
 
 std::string Crypto::formatToCSV() const {
-    return "Crypto;" + ticker + ";" +
-        std::to_string(tokenAmount) + ";" +
-        std::to_string(averagePrice) + ";" +
-        std::to_string(currentPrice) + ";0";
+    std::ostringstream oss;
+    oss << "Crypto;"
+        << ticker << ";"
+        << tokenAmount << ";"
+        << averagePrice << ";"
+        << currentPrice << ";0";
+
+    return oss.str();
 }

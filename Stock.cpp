@@ -1,4 +1,5 @@
 #include "Stock.h"
+#include <sstream>
 
 // --- CONSTRUCTOR ---
 Stock::Stock(const std::string& t, double l, double s, double k, double d)
@@ -68,9 +69,14 @@ bool Stock::subtractFromPosition(double quantityToSell) {
 }
 
 std::string Stock::formatToCSV() const {
-    return "Stock;" + ticker + ";" +
-        std::to_string(numberOfShares) + ";" +
-        std::to_string(averagePrice) + ";" +
-        std::to_string(currentPrice) + ";" +
-        std::to_string(dividendPerShare);
+    std::ostringstream oss;
+
+    oss << "Stock;"
+        << ticker << ";"
+        << numberOfShares << ";"
+        << averagePrice << ";"
+        << currentPrice << ";"
+        << dividendPerShare;
+
+    return oss.str(); 
 }
