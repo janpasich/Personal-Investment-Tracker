@@ -14,7 +14,6 @@ public:
     Crypto(const std::string& t, double i, double s, double k);
 
     // --- API PREPARATION (Setters) ---
-    void updatePrice(double newPrice); // Note: Declared but not implemented in the .cpp
     virtual void setCurrentPrice(double newPrice) override;
 
     // --- GUI PREPARATION (Getters) ---

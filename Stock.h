@@ -15,7 +15,6 @@ public:
     Stock(const std::string& t, double l, double s, double k, double d);
 
     // --- 1. API PREPARATION (Setters) ---
-    void updatePrice(double newPrice); // Note: This is declared but wasn't implemented in your .cpp (you used setCurrentPrice instead)
     void updateDividend(double newDividend);
     virtual void setCurrentPrice(double newPrice) override;
 
